@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>测测你的本命猫狗人格</title>
+<style>
+  :root{
+    --bg:#f5f0e6;
+    --paper:#fffdf8;
+    --ink:#2b2620;
+    --ink-soft:#6b6054;
+    --line:#e7ddcc;
+    --accent:#b8742f;
+    --accent-soft:#f3e2cf;
+    --shadow:0 10px 28px rgba(80,60,30,.12);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,-apple-system,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.7;
+    -webkit-font-smoothing:antialiased;min-height:100vh;
+  }
+  .wrap{max-width:680px;margin:0 auto;padding:0 20px}
+  button{font-family:inherit;cursor:pointer}
+
+  .view{display:none}
+  .view.active{display:block;animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* 起始页 */
+  header.hero{padding:54px 0 26px;text-align:center}
+  .hero .kicker{display:inline-block;font-size:13px;letter-spacing:.18em;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:6px 16px;background:var(--paper)}
+  .hero h1{font-size:clamp(26px,5vw,38px);font-weight:800;margin:18px 0 12px;letter-spacing:.02em}
+  .hero p{color:var(--ink-soft);max-width:520px;margin:0 auto;font-size:15px}
+  .start-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:34px 28px;margin:24px auto;text-align:center}
+  .start-card h2{font-size:21px;margin-bottom:10px}
+  .start-card p{color:var(--ink-soft);font-size:15px;margin-bottom:24px}
+  .big-btn{background:var(--ink);color:#fff;border:none;border-radius:14px;padding:15px 34px;font-size:16px;font-weight:600;transition:opacity .15s}
+  .big-btn:hover{opacity:.88}
+  .start-note{margin-top:16px;font-size:13px;color:var(--ink-soft)}
+
+  /* 答题 */
+  .quiz-panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 24px;margin:24px auto}
+  .quiz-progress{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .quiz-progress .bar{flex:1;height:8px;background:var(--line);border-radius:999px;overflow:hidden}
+  .quiz-progress .fill{height:100%;background:var(--accent);border-radius:999px;transition:width .3s}
+  .quiz-progress .count{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .question-title{font-size:18px;font-weight:700;margin-bottom:20px;min-height:54px}
+  .options{display:grid;gap:12px}
+  .option{display:flex;gap:14px;align-items:flex-start;text-align:left;background:#fbf7f0;border:1px solid var(--line);border-radius:14px;padding:15px 16px;transition:border-color .15s,background .15s}
+  .option:hover{border-color:var(--accent);background:#fff4e8}
+  .option.picked{border-color:var(--accent);background:#fff4e8}
+  .option .tag{flex:none;width:26px;height:26px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+  .option .text{font-size:15px;flex:1;min-width:0}
+  .quiz-footer{margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .quiz-tip{font-size:12px;color:var(--ink-soft)}
+  .back-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);border-radius:12px;padding:9px 16px;font-size:13px;transition:border-color .15s,color .15s}
+  .back-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+  .back-btn:disabled{opacity:.35;cursor:not-allowed}
+
+  /* 结果 */
+  .result-panel{background:var(--paper);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;margin:24px auto}
+  .result-cover{position:relative;padding:34px 26px 28px;background:linear-gradient(150deg,#3a2c1c 0%,#6b4a26 55%,#8a6230 100%);color:#fff;overflow:hidden}
+  .result-photo{position:absolute;top:18px;right:18px;width:128px;height:128px;border-radius:24px;object-fit:cover;border:2px solid rgba(255,255,255,.35);box-shadow:0 8px 20px rgba(0,0,0,.28)}
+  .result-cover .cover-text{position:relative;padding-right:150px}
+  .result-cover::before{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
+  .result-cover::after{content:"";position:absolute;left:-30px;bottom:-50px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.06)}
+  .result-type{position:relative;display:inline-block;font-size:12px;letter-spacing:.16em;color:#fff;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 14px;margin-bottom:14px}
+  .result-name{position:relative;font-size:29px;font-weight:800;letter-spacing:.03em;margin-bottom:4px}
+  .result-alias{position:relative;font-size:13.5px;color:rgba(255,255,255,.88)}
+  .result-body{padding:24px 26px 28px}
+  .result-kw{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+  .result-kw span{font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:6px 13px;font-weight:600}
+
+  .result-section{margin-top:20px}
+  .section-head{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .section-head .dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+  .section-head h3{font-size:15px;font-weight:700;letter-spacing:.04em;color:var(--ink)}
+  .result-section p{font-size:15px;color:#3d362d;line-height:1.8}
+  .result-section p .em{color:var(--accent);font-weight:700}
+
+  .quote{position:relative;background:#fbf3e7;border:1px solid var(--accent-soft);border-radius:18px;padding:20px 20px;margin-top:6px}
+  .quote .mark{position:absolute;top:6px;left:16px;font-size:32px;color:var(--accent);opacity:.25;font-family:Georgia,serif;line-height:1}
+  .quote-text{position:relative;font-size:17px;line-height:1.75;font-weight:600;color:#5a3d1e}
+
+  .fit-box{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+  .fit-card{border-radius:16px;padding:15px 16px 13px}
+  .fit-card.good{background:#f1f7f1;border:1px solid #d7e8d7}
+  .fit-card.warn{background:#faf1ee;border:1px solid #f0d8d1}
+  .fit-card .label{display:flex;align-items:center;gap:7px;font-weight:700;font-size:13.5px;margin-bottom:7px}
+  .fit-card.good .label{color:#3f7a52}
+  .fit-card.warn .label{color:#a8543c}
+  .fit-card .label::before{content:"";width:7px;height:7px;border-radius:50%}
+  .fit-card.good .label::before{background:#3f7a52}
+  .fit-card.warn .label::before{background:#a8543c}
+  .fit-card .txt{font-size:14px;color:#3d362d;line-height:1.7}
+
+  .compliance{margin-top:20px;font-size:12px;color:var(--ink-soft);line-height:1.6;border-top:1px dashed var(--line);padding-top:14px}
+  .disclaimer{text-align:center;font-size:12px;color:var(--ink-soft);margin:18px 0 30px}
+
+  @media (max-width:480px){
+    .result-name{font-size:23px}
+    .result-cover{padding:28px 20px 24px}
+    .result-photo{width:100px;height:100px;border-radius:20px;top:16px;right:16px}
+    .result-cover .cover-text{padding-right:118px}
+    .result-body{padding:20px 18px}
+    .fit-box{grid-template-columns:1fr}
+    .quote-text{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 起始视图 ===== -->
+<section id="view-start" class="view active">
+  <header class="hero wrap">
+    <span class="kicker">性格人格测试</span>
+    <h1>测测你的本命猫狗人格</h1>
+    <p>12 道小题，照着第一直觉选，最后揭晓你最像哪一种猫狗。</p>
+  </header>
+  <div class="wrap">
+    <div class="start-card">
+      <h2>准备好了吗？</h2>
+      <p>没有标准答案，选最贴近你平时状态的那个就好。</p>
+      <button class="big-btn" onclick="startQuiz()">开始测试</button>
+      <p class="start-note">全程约 1 分钟 · 选完自动进入下一题</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 答题视图 ===== -->
+<section id="view-quiz" class="view">
+  <div class="wrap">
+    <div class="quiz-panel">
+      <div class="quiz-progress">
+        <div class="bar"><div class="fill" id="progressFill"></div></div>
+        <span class="count" id="progressCount">第 1 题 / 共 16 题</span>
+      </div>
+      <div class="question-title" id="questionTitle"></div>
+      <div class="options" id="optionList"></div>
+      <div class="quiz-footer">
+        <button class="back-btn" id="backBtn" onclick="goBack()" type="button">返回上一题</button>
+        <span class="quiz-tip">点击选项后自动进入下一题</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 结果视图 ===== -->
+<section id="view-result" class="view">
+  <div class="wrap">
+    <div class="result-panel">
+      <div class="result-cover">
+        <img class="result-photo" id="resultImg" alt="">
+        <div class="cover-text">
+          <span class="result-type" id="resultType"></span>
+          <h2 class="result-name" id="resultName"></h2>
+          <p class="result-alias" id="resultAlias"></p>
+        </div>
+      </div>
+      <div class="result-body">
+        <div class="result-kw" id="resultKw"></div>
+
+        <div class="result-section">
+          <div class="section-head"><span class="dot"></span><h3>深度解析</h3></div>
+          <p id="resultDesc"></p>
+        </div>
+
+        <div class="result-section">
+          <div class="quote">
+            <span class="mark">“</span>
+            <p class="quote-text" id="resultQuote"></p>
+          </div>
+        </div>
+
+        <div class="result-section">
+          <div class="section-head"><span class="dot"></span><h3>适合 / 不适合</h3></div>
+          <div class="fit-box">
+            <div class="fit-card good"><div class="label">适合</div><div class="txt" id="resultFit"></div></div>
+            <div class="fit-card warn"><div class="label">不适合</div><div class="txt" id="resultWarn"></div></div>
+          </div>
+        </div>
+
+        <p class="compliance" id="resultNote"></p>
+      </div>
+    </div>
+    <p class="disclaimer">本测试为娱乐参考，性格结果不构成任何专业判断。</p>
+  </div>
+</section>
+
+<script>
+/* ===== 品种图片映射（本地相对路径） ===== */
+const IMG_MAP = {
+  ragdoll: "assets/cat-ragdoll.jpg",
+  bluewhite: "assets/cat-blue-white-bsh.jpg",
+  siamese: "assets/cat-siamese.jpg",
+  sphynx: "assets/cat-sphynx.jpg",
+  samoyed: "assets/dog-samoyed.jpg",
+  golden: "assets/dog-golden.jpg",
+  labrador: "assets/dog-labrador.jpg",
+  bichon: "assets/dog-bichon.jpg",
+  poodle: "assets/dog-poodle.jpg",
+  goldenshade: "assets/cat-golden-shaded.jpg",
+  silvershade: "assets/cat-silver-shaded.jpg",
+  lihua: "assets/cat-li-hua.jpg",
+  chinchilla: "assets/cat-chinchilla.jpg",
+  calico: "assets/cat-calico.jpg",
+  blackcat: "assets/cat-black.jpg",
+  shiba: "assets/dog-shiba.jpg",
+  akita: "assets/dog-akita.jpg",
+  schnauzer: "assets/dog-schnauzer.jpg",
+  americansh: "assets/cat-american-sh.jpg",
+  maine: "assets/cat-maine-coon.jpg",
+  cowcat: "assets/cat-cow.jpg",
+  bcollie: "assets/dog-border-collie.jpg",
+  husky: "assets/dog-husky.jpg",
+  corgi: "assets/dog-corgi.jpg",
+  pom: "assets/dog-pomeranian.jpg",
+  gshepherd: "assets/dog-german-shepherd.jpg",
+  malamute: "assets/dog-malamute.jpg",
+  blue: "assets/cat-blue-bsh.jpg",
+  fold: "assets/cat-scottish-fold.jpg",
+  exotic: "assets/cat-exotic-sh.jpg",
+  persian: "assets/cat-persian.jpg",
+  orange: "assets/cat-orange.jpg",
+  frenchie: "assets/dog-french-bulldog.jpg",
+  chow: "assets/dog-chow-chow.jpg",
+  yorkie: "assets/dog-yorkie.jpg"
+};
+
+/* ===== 16 道题：每题四个选项对应 A / B / C / D ===== */
+const QUESTIONS = [
+  {
+    q: "周末的晚上，你最理想的过法是？",
+    options: [
+      { k: "A", t: "和喜欢的人窝在一起，哪都不去" },
+      { k: "B", t: "一个人安静做自己的事" },
+      { k: "C", t: "出门找点新鲜刺激的事" },
+      { k: "D", t: "在家瘫着，吃好喝好" }
+    ]
+  },
+  {
+    q: "到了一个全是陌生人的聚会，你通常？",
+    options: [
+      { k: "A", t: "很快就能和人熟起来" },
+      { k: "B", t: "找个角落观察全场" },
+      { k: "C", t: "主动去认识有意思的人" },
+      { k: "D", t: "待一会儿就想溜回家" }
+    ]
+  },
+  {
+    q: "有人未经你同意动了你的东西，你会？",
+    options: [
+      { k: "A", t: "心里介意但不说，默默记下" },
+      { k: "B", t: "明确划清界限：下次别动我东西" },
+      { k: "C", t: "当场就发作，必须给说法" },
+      { k: "D", t: "无所谓，随便用吧" }
+    ]
+  },
+  {
+    q: "面对一个很有挑战、但可能失败的机会，你？",
+    options: [
+      { k: "A", t: "想找人一起，有伴才敢上" },
+      { k: "B", t: "自己默默评估，稳了再上" },
+      { k: "C", t: "先冲了再说，失败也值" },
+      { k: "D", t: "太累了，还是保持现状吧" }
+    ]
+  },
+  {
+    q: "你的精力更像？",
+    options: [
+      { k: "A", t: "稳定温和，持久陪伴型" },
+      { k: "B", t: "内敛，独处才能充电" },
+      { k: "C", t: "旺盛，闲不下来" },
+      { k: "D", t: "慵懒，能躺就躺" }
+    ]
+  },
+  {
+    q: "情绪不好的时候，你更需要？",
+    options: [
+      { k: "A", t: "有人抱抱、陪着说说话" },
+      { k: "B", t: "一个人待着消化" },
+      { k: "C", t: "出门运动 / 折腾发泄" },
+      { k: "D", t: "睡一觉 / 吃一顿就好了" }
+    ]
+  },
+  {
+    q: "对「新鲜事物」，你的态度是？",
+    options: [
+      { k: "A", t: "跟着信任的人一起才愿意试" },
+      { k: "B", t: "先观察，不轻易尝试" },
+      { k: "C", t: "来者不拒，特别爱探索" },
+      { k: "D", t: "无所谓，舒服就好" }
+    ]
+  },
+  {
+    q: "在团队里，你更像？",
+    options: [
+      { k: "A", t: "粘合剂，照顾大家情绪" },
+      { k: "B", t: "独行侠，自己把事情做掉" },
+      { k: "C", t: "发动机，带头往前冲" },
+      { k: "D", t: "稳定器，随大流不折腾" }
+    ]
+  },
+  {
+    q: "你理想中的关系是？",
+    options: [
+      { k: "A", t: "时刻在一起，黏黏糊糊" },
+      { k: "B", t: "彼此有空间，但很忠诚" },
+      { k: "C", t: "一起冒险一起疯" },
+      { k: "D", t: "舒服自在，不费力" }
+    ]
+  },
+  {
+    q: "别人对你的第一印象通常是？",
+    options: [
+      { k: "A", t: "亲切好接近" },
+      { k: "B", t: "有点高冷 / 有距离感" },
+      { k: "C", t: "精力旺盛 / 自来熟" },
+      { k: "D", t: "佛系 / 淡定" }
+    ]
+  },
+  {
+    q: "花钱这件事，你更接近哪种？",
+    options: [
+      { k: "A", t: "看对眼就买，快乐最重要" },
+      { k: "B", t: "精打细算，钱花在刀刃上" },
+      { k: "C", t: "喜欢就冲，尤其新奇的东西" },
+      { k: "D", t: "够用就行，不折腾" }
+    ]
+  },
+  {
+    q: "压力特别大的时候，你会？",
+    options: [
+      { k: "A", t: "找人倾诉，说出来就好受" },
+      { k: "B", t: "自己扛，不想麻烦别人" },
+      { k: "C", t: "化压力为动力，猛干一场" },
+      { k: "D", t: "睡一觉吃一顿，船到桥头自然直" }
+    ]
+  },
+  {
+    q: "朋友向你求助，你的第一反应是？",
+    options: [
+      { k: "A", t: "立刻放下手头的事去陪他" },
+      { k: "B", t: "先弄清状况，给有分寸的建议" },
+      { k: "C", t: "拉着他一起想办法、找路子" },
+      { k: "D", t: "陪他待着，慢慢开导就好" }
+    ]
+  },
+  {
+    q: "面对新的环境或人群，你通常？",
+    options: [
+      { k: "A", t: "只要有人带着，很快就能融入" },
+      { k: "B", t: "先保持距离，观察清楚再说" },
+      { k: "C", t: "主动出击，到处结交有意思的人" },
+      { k: "D", t: "待在熟悉的角落，舒服就好" }
+    ]
+  },
+  {
+    q: "你更享受哪种独处方式？",
+    options: [
+      { k: "A", t: "哪怕一个人，也想有人随时能聊" },
+      { k: "B", t: "彻底安静，谁都别来打扰" },
+      { k: "C", t: "安排满当，找点事做才不浪费" },
+      { k: "D", t: "漫无目的，放空发呆最惬意" }
+    ]
+  },
+  {
+    q: "如果给你的性格选一句口头禅，更贴近？",
+    options: [
+      { k: "A", t: "有你在就好，我们一起" },
+      { k: "B", t: "我的事我自己有数" },
+      { k: "C", t: "想做就去试，怕什么" },
+      { k: "D", t: "顺其自然，别太折腾" }
+    ]
+  }
+];
+
+/* ===== 36 品种结果库：扁平列表，每个品种独立加权计分键 ===== */
+const TYPE_NAME = { A: "陪伴粘人型", B: "独立领地型", C: "高能探索型", D: "佛系松弛型" };
+
+const RESULTS = [
+  /* ===== A 陪伴粘人型（9 个） ===== */
+  { id: "ragdoll", type: "A", name: "布偶猫", alias: "Ragdoll · 温柔粘人的陪伴者", kw: ["温柔", "粘人", "随和", "讨好型"],
+      desc: "标准的「软乎乎」人格，被爱着就会完全放松下来。你习惯把别人放在前面、照顾所有人的情绪，以至于常常忘了自己也需要被照顾。你的温柔是天赋，也是你要学会「先爱自己」的功课。",
+      quote: "你被抱起来就会软下来。温柔不是软弱，是你把所有人都照顾好了，才轮到你自己。",
+      fit: "温暖稳定的亲密关系、愿意慢慢陪着你的人", warn: "需要强硬立场的对抗环境、长期被索取情绪价值的关系", note: "" },
+  { id: "bluewhite", type: "A", name: "英短蓝白", alias: "英国短毛猫 · 蓝白双色（色型，非独立品种）", kw: ["奶凶", "活泼", "反差萌", "亲人"],
+      desc: "你一半是稳重蓝、一半是跳脱白，天生自带「奶凶」的反差萌。看着高冷，其实活泼又亲人，熟了以后特别会撒娇。你的萌是一种战略武器。",
+      quote: "一半高冷，一半奶凶，反差就是你最大的魅力。",
+      fit: "轻松有趣的环境、能接住你情绪的人", warn: "死板严肃、气氛压抑的环境", note: "蓝白是英国短毛猫的毛色 / 色型，并非独立品种。" },
+  { id: "siamese", type: "A", name: "暹罗猫", alias: "Siamese · 高浓度的话痨", kw: ["话痨", "聪明", "占有欲", "高浓度"],
+      desc: "你有说不完的话、使不完的黏人劲儿。你要的爱是「高浓度」的，藏不了一点。聪明又敏感，特别在意自己在对方心里的位置，冷了你会直接抗议。",
+      quote: "要就要最满的陪伴，你藏不了一点。",
+      fit: "黏腻热烈、双向奔赴的恋爱", warn: "冷淡疏离、各过各的关系", note: "" },
+  { id: "sphynx", type: "A", name: "斯芬克斯无毛猫", alias: "Sphynx · 把热度写在脸上", kw: ["粘人", "外向", "话多", "热情"],
+      desc: "你没有「毛」这个保护色，所以把热情都写在脸上。你外向不怕生、见人就亲，一路碎碎念跟着人走。你特别需要陪伴，独处太久会焦虑。",
+      quote: "你没有盔甲，却把最热的温度给了全世界。",
+      fit: "热闹、被需要的关系", warn: "长期独处、被冷落的环境", note: "" },
+  { id: "samoyed", type: "A", name: "萨摩耶", alias: "Samoyed · 自带微笑的小淘气", kw: ["微笑", "亲人", "活泼", "小淘气"],
+      desc: "你天生一副「微笑脸」，走到哪都讨人喜欢。热情、开朗、没架子，就是有时候有点小淘气，喜欢给自己找点乐子。你的笑是真的很治愈，也是你对抗生活的方式。",
+      quote: "笑着面对一切，是你对抗生活的方式。",
+      fit: "热闹有爱的环境", warn: "长期冷脸、压抑的氛围", note: "" },
+  { id: "golden", type: "A", name: "金毛", alias: "Golden Retriever · 教科书级的暖", kw: ["暖男", "忠诚", "贪吃", "治愈"],
+      desc: "教科书级的「暖」，对人无限亲近、忠诚可靠，谁都愿意跟你待在一起。唯一的软肋是心太软、还贪吃——贪恋一切美好的东西，所以常把自己撑得太满。",
+      quote: "你唯一的缺点，是对谁都太好了。",
+      fit: "长情、被信赖的关系", warn: "需要冷酷决断的场合", note: "" },
+  { id: "labrador", type: "A", name: "拉布拉多", alias: "Labrador Retriever · 毫无保留的信任", kw: ["热情", "贪吃", "好脾气", "忠诚"],
+      desc: "永远的「好脾气代表」，对人——包括陌生人都热情得不行。你天生精力充沛，也天生贪吃。你最大的魅力是毫无保留地信任人。",
+      quote: "你的热情，是你递给世界的名片。",
+      fit: "需要热情和信任的环境", warn: "冷漠、猜疑的氛围", note: "" },
+  { id: "bichon", type: "A", name: "比熊", alias: "Bichon Frise · 会走路的棉花糖", kw: ["活泼", "粘人", "爱撒娇", "治愈"],
+      desc: "你是一朵会走路的「棉花糖」，活泼、爱玩、对谁都超级友好。你特别爱撒娇、学东西快，就是特别怕孤单，需要人陪。你的可爱是一种天赋。",
+      quote: "你的可爱是天赋，但要记得别为讨好而委屈自己。",
+      fit: "被宠、被陪伴的关系", warn: "被冷落、长期没人陪的处境", note: "" },
+  { id: "poodle", type: "A", name: "泰迪（贵宾）", alias: "Poodle · 走到哪都受欢迎", kw: ["聪明", "粘人", "活泼", "会撒娇"],
+      desc: "你是「走到哪都受欢迎」的人，聪明、会来事、特别会撒娇。你渴望被关注和宠爱，也懂得怎么让人喜欢你。记住：你的讨人喜欢是加分项，但别为了被喜欢而委屈自己。",
+      quote: "你的聪明，都写在讨人喜欢上。",
+      fit: "被宠、被看见的关系", warn: "被冷落、被忽视的处境", note: "泰迪是贵宾犬的造型俗称，并非独立品种。" },
+  /* ===== B 独立领地型（9 个） ===== */
+  { id: "goldenshade", type: "B", name: "英短金渐层", alias: "英国短毛猫 · 金色阴影色（色型）", kw: ["温吞", "贵气", "呆萌", "情绪稳定"],
+      desc: "你不是大喜大悲的人，情绪像一碗温吞的水，表面慢半拍、有点呆萌，其实心里门儿清。你追求「稳稳的幸福」，讨厌失控，也不喜欢被逼着做决定。你的温柔是润物细无声的，但别把你的淡定当成好拿捏。",
+      quote: "看着不争不抢，其实你早就把日子过明白了。",
+      fit: "稳定的环境、长情的感情", warn: "高压竞争、频繁变动的生活", note: "金渐层是英国短毛猫的毛色 / 色型，并非独立品种。" },
+  { id: "silvershade", type: "B", name: "英短银渐层", alias: "英国短毛猫 · 银色阴影色（色型）", kw: ["清冷", "优雅", "疏离", "有边界"],
+      desc: "自带高级感，第一次见你的人总觉着你有距离。你不是高冷，只是慢热，熟了才发现你其实很温柔。你特别在意边界，讨厌被冒犯，也从不轻易越别人的界。",
+      quote: "不是高冷，是把热情留给值得的人。",
+      fit: "同频的小圈子、有分寸的关系", warn: "没边界感的社交", note: "银渐层是英国短毛猫的毛色 / 色型，并非独立品种。" },
+  { id: "lihua", type: "B", name: "狸花猫", alias: "Chinese Li Hua · 本土的机警王者", kw: ["机警", "聪明", "独立", "护家"],
+      desc: "你是中国本土的「土猫王者」，聪明机警、记性好、天生捕鼠高手。你对家人温和忠诚，对外人保持警惕，是能独当一面、还能护家的那一个。",
+      quote: "看着野，其实最重感情、最护着自己人。",
+      fit: "需要靠谱和担当的场合", warn: "被圈养、被束缚的处境", note: "狸花猫是真正的独立品种（中国本土）。" },
+  { id: "chinchilla", type: "B", name: "金吉拉", alias: "Chinchilla · 行走的高级灰", kw: ["精致", "优雅", "慢热", "小公主"],
+      desc: "你是「行走的高级灰」，长得精致、气质出众。你有点慢热和小傲娇，熟了以后其实很粘人。你追求品质，也容易对粗糙将就感到不适。",
+      quote: "你可以将就生活，但骨子里还是想要精致。",
+      fit: "有品质、被宠的生活", warn: "粗糙将就、没人懂你的环境", note: "" },
+  { id: "calico", type: "B", name: "三花猫", alias: "中华田园 · 三花色（毛色，非品种）", kw: ["傲娇", "多变", "有主见", "女王"],
+      desc: "你是「三花」——三种颜色就像你丰富多变的性格。你有主见、有点小傲娇，情绪和心思都写在脸上。你未必好伺候，但懂你的人觉得你特别有魅力。",
+      quote: "傲娇是我的底色，魅力是我的天赋。",
+      fit: "被懂、被宠的关系", warn: "被忽视、被敷衍的处境", note: "三花是毛色 / 花纹分类，通常属于中华田园猫，并非独立品种。" },
+  { id: "blackcat", type: "B", name: "黑猫（玄猫）", alias: "中华田园 · 黑色（毛色，非品种）", kw: ["神秘", "高冷", "独立", "有灵性"],
+      desc: "你是「玄猫」，自带神秘气场。你高冷又独立，喜欢独处、不轻易交心，但一旦信任一个人就特别专一。别人觉得你神秘，其实你只是懒得社交。",
+      quote: "不是高冷，是你的世界只对少数人开放。",
+      fit: "小圈子、深度的关系", warn: "无意义的社交", note: "黑猫是毛色 / 花纹分类，通常属于中华田园猫，并非独立品种。" },
+  { id: "shiba", type: "B", name: "柴犬", alias: "Shiba Inu · 独立有边界的小倔脾气", kw: ["独立", "倔强", "高冷", "忠诚"],
+      desc: "你像只小狐狸，机警又独立，还有点小倔脾气。对亲近的人其实很忠诚，只是不轻易表露。你的「高冷」和「戏精」都是保护色，懂你的人才知道你有多重感情。",
+      quote: "不是高冷，是懒得解释。",
+      fit: "有边界感的成熟关系", warn: "过度黏腻、没空间的关系", note: "" },
+  { id: "akita", type: "B", name: "秋田犬", alias: "Akita · 不轻易爱的忠犬", kw: ["忠诚", "高冷", "倔强", "重情"],
+      desc: "你是「忠犬八公」本犬——忠诚到骨子里，却从不轻易表露感情。你高冷、倔强、有自己的骄傲，对陌生人爱搭不理，对在乎的人却愿意付出一切。",
+      quote: "不轻易爱，一旦爱了就是一辈子。",
+      fit: "深沉、长情的感情", warn: "快餐式、敷衍的关系", note: "" },
+  { id: "schnauzer", type: "B", name: "雪纳瑞", alias: "Schnauzer · 小老头里的不服输", kw: ["机警", "勇敢", "倔强", "小老头"],
+      desc: "你长着「小老头」胡须，其实机警又勇敢，是天生的「看家好手」。你有点倔、有点认死理，但对认定的人和事特别忠诚。你的稳重里藏着一颗不服输的心。",
+      quote: "看着像小老头，其实比谁都倔、比谁都敢。",
+      fit: "需要坚持和底线的场合", warn: "被敷衍、被轻视的处境", note: "" },
+  /* ===== C 高能探索型（9 个） ===== */
+  { id: "americansh", type: "C", name: "美短", alias: "American Shorthair · 放哪都放心", kw: ["稳定", "全能", "独立", "不吵闹"],
+      desc: "你是「放哪都让人放心」的那种人，能力全面、情绪稳定，能玩能静，也不给别人添麻烦。缺点是太靠谱，容易被当成理所当然，记得偶尔也要为自己要一次。",
+      quote: "不吵不闹，但你一回头，它一直在。",
+      fit: "需要靠谱队友的团队 / 家庭", warn: "戏剧化、过度索取的关系", note: "" },
+  { id: "maine", type: "C", name: "缅因猫", alias: "Maine Coon · 温柔的巨人", kw: ["温柔巨人", "亲人", "爱探索", "有担当"],
+      desc: "看着大只、有气场，其实内心温柔又爱照顾人，是典型的「温柔巨人」。你既恋家又好奇，愿意带着在意的人一起去看更大的世界，也是朋友里那个被依赖的主心骨。",
+      quote: "外表是大哥，内心是只粘人的大猫。",
+      fit: "当主心骨、被依赖的角色", warn: "被关在太小太压抑的环境里", note: "" },
+  { id: "cowcat", type: "C", name: "奶牛猫", alias: "中华田园 · 黑白花（毛色，非品种）", kw: ["神经质", "精力旺", "脑回路清奇", "有趣"],
+      desc: "你是人群里的「快乐源泉」，精力旺盛、想法跳脱，偶尔做出让人哭笑不得的事。你不按常理出牌，但正因为这样，才特别让人难忘——「猫中二哈」非你莫属。",
+      quote: "别人笑我太疯癫，我笑别人看不穿。",
+      fit: "有创意、自由的环境", warn: "按部就班、条条框框的生活", note: "奶牛猫是毛色 / 花纹分类，通常属于中华田园猫，并非独立品种。" },
+  { id: "bcollie", type: "C", name: "边境牧羊犬", alias: "Border Collie · 脑子转不停的高能选手", kw: ["聪明", "精力无限", "工作狂", "敏感"],
+      desc: "公认的「脑子好使」，学什么都快，满脑子都是「接下来干什么」。精力像永动机，闲下来反而会焦虑。你缺的从来不是能力，是能跟你同频、陪你一起跑的人。",
+      quote: "你缺的不是能力，是能跟你同频的人。",
+      fit: "高挑战、高成长的环境", warn: "一眼望到头、重复机械的工作", note: "" },
+  { id: "husky", type: "C", name: "哈士奇", alias: "Siberian Husky · 不羁爱自由的段子手", kw: ["话痨", "精力爆表", "自来熟", "拆家"],
+      desc: "你是人群里的「段子手」，爱闹爱嚎、表情夸张、对谁都自来熟。精力旺盛到离谱，无聊的时候就会「拆家」——给自己搞点幺蛾子。你不是坏，只是天生不羁爱自由。",
+      quote: "人生苦短，先拆为敬。",
+      fit: "自由奔放、不被拘束的生活", warn: "被管太死、按部就班的环境", note: "" },
+  { id: "corgi", type: "C", name: "柯基", alias: "Corgi · 小短腿里的大心脏", kw: ["聪明", "倔强", "精力旺", "可爱"],
+      desc: "小短腿里装着一颗大心脏。你聪明又爱表现，看着软萌其实特别倔，认定的事九头牛拉不回。精力旺盛、闲不住，最受不了被人小瞧。",
+      quote: "腿短，但倔。别人笑你可爱，其实你比谁都扛得住事。",
+      fit: "被看见、能施展的舞台", warn: "被低估、被当成摆设的处境", note: "" },
+  { id: "pom", type: "C", name: "博美", alias: "Pomeranian · 个子小存在感不小", kw: ["活泼", "爱叫", "小傲娇", "机警"],
+      desc: "你小小一只，嗓门和自信却都不小。你机警、活泼、有点小傲娇，喜欢成为人群焦点。你看着软萌，其实有自己的小脾气，最讨厌被忽视。",
+      quote: "个子小，不代表存在感小。",
+      fit: "被关注、能表现的环境", warn: "被无视、被冷落的处境", note: "" },
+  { id: "gshepherd", type: "C", name: "德牧", alias: "德国牧羊犬 · 工作犬之王", kw: ["忠诚", "可靠", "严肃", "有原则"],
+      desc: "你是「工作犬之王」，忠诚、可靠、极有原则。你做事认真、值得托付，是那种「把后背交给你最放心」的人。缺点是太严肃，偶尔需要学会放松。",
+      quote: "靠谱是你的名片，但偶尔也允许自己歇一歇。",
+      fit: "需要担当和纪律的场合", warn: "散漫、无规则的环境", note: "" },
+  { id: "malamute", type: "C", name: "阿拉斯加", alias: "Alaskan Malamute · 不声不响扛起事的人", kw: ["憨厚", "亲人", "倔强", "力量感"],
+      desc: "看着温吞，其实特别有主见，认准的事哪怕「选择性装聋」，也要按自己的来。你是那种不声不响扛起事的人，对家人特别粘、特别护。",
+      quote: "憨是表象，倔是内核。",
+      fit: "需要担当和力量的场合", warn: "被当成没主见的「老实人」", note: "" },
+  /* ===== D 佛系松弛型（9 个） ===== */
+  { id: "blue", type: "D", name: "英短蓝猫", alias: "英国短毛猫 · 纯蓝色（色型）", kw: ["稳重", "憨厚", "佛系", "情绪稳定"],
+      desc: "你是经典「大脸猫」，圆滚滚、慢吞吞，脾气好到让人心疼。你不争不抢、随遇而安，是朋友里最让人安心的存在。缺点是太随和，容易被忽略自己的需求。",
+      quote: "不吵不闹，稳稳地陪着你就好。",
+      fit: "安稳、低压的生活", warn: "鸡飞狗跳、高压竞争的环境", note: "蓝猫是英国短毛猫的毛色 / 色型，并非独立品种。" },
+  { id: "fold", type: "D", name: "苏格兰折耳猫", alias: "Scottish Fold · 居家小甜心", kw: ["温柔", "安静", "宅家", "小甜心"],
+      desc: "你性格安静又粘人，是标准的「居家小甜心」。你不爱折腾、喜欢宅着，对亲近的人特别温柔，只是一个人待太久会没安全感。",
+      quote: "世界很大，但你只想窝在喜欢的人身边。",
+      fit: "温馨稳定的家庭", warn: "漂泊不定、频繁分离的生活", note: "折耳猫有遗传软骨病风险，领养 / 选购请关注健康。" },
+  { id: "exotic", type: "D", name: "加菲猫（异国短毛猫）", alias: "Exotic Shorthair · 扁脸大眼的懒鬼", kw: ["呆萌", "懒散", "憨厚", "佛系"],
+      desc: "你是「加菲猫」本猫——扁脸大眼、懒懒散散、与世无争。你不爱动、爱吃爱睡，对什么都看得开。别人觉得你懒得可爱，其实你只是懂得享受当下。",
+      quote: "能躺着就不坐着，是你的人生智慧。",
+      fit: "慢节奏、松弛的生活", warn: "被逼着卷的环境", note: "" },
+  { id: "persian", type: "D", name: "波斯猫", alias: "Persian · 猫界贵族", kw: ["优雅", "慵懒", "高贵", "情绪稳定"],
+      desc: "你是猫界「贵族」，安静、温顺、情绪稳定。你更喜欢安静地接受宠爱，而不是满屋跑酷。你享受精致、体面的生活，也有点小傲娇。",
+      quote: "优雅不是装出来的，是刻在骨子里的。",
+      fit: "精致、安逸的生活", warn: "奔波劳碌、鸡飞狗跳的处境", note: "" },
+  { id: "orange", type: "D", name: "橘猫", alias: "中华田园猫 · 橘色虎斑（毛色，非品种）", kw: ["佛系", "乐天", "亲人", "知足"],
+      desc: "你把「今天过得舒服」当成头等大事，不争不抢、情绪稳定，是天生的乐天派。你未必最耀眼，但总能把日子过成别人羡慕的样子——「十橘九胖，大橘为重」说的就是你这种知足的气场。",
+      quote: "不争，是你的底气；吃好睡好，是你的人生哲学。",
+      fit: "松弛、低压的生活节奏", warn: "内卷激烈、节奏紧绷的竞技场", note: "橘猫是毛色 / 花纹分类，通常属于中华田园猫，并非独立品种。" },
+  { id: "frenchie", type: "D", name: "法斗", alias: "French Bulldog · 呆萌固执的法斗", kw: ["呆萌", "固执", "佛系", "亲人"],
+      desc: "你是「法斗」本斗——大耳朵、呆萌脸、走路自带喜感。你懒懒的、不爱叫也不爱闹，但对主人特别亲。你有点固执，认准的事别人劝不动。",
+      quote: "呆萌是表象，固执是内核，佛系是日常。",
+      fit: "轻松、不折腾的生活", warn: "高强度运动 / 激烈竞争的环境", note: "" },
+  { id: "chow", type: "D", name: "松狮", alias: "Chow Chow · 毛茸茸的小狮子", kw: ["呆萌", "高冷", "独立", "有脾气"],
+      desc: "你像只毛茸茸的「小狮子」，长得呆萌，性格却高冷独立。你不爱讨好、有自己的脾气，对陌生人保持距离，对主人却忠诚。你的「高冷」是保护色。",
+      quote: "看着萌，其实有脾气；看着冷，其实很专一。",
+      fit: "有边界、被尊重的关系", warn: "过度热情的社交", note: "" },
+  { id: "yorkie", type: "A", name: "约克夏", alias: "Yorkshire Terrier · 小小只的主角", kw: ["精致", "傲娇", "活泼", "小公主"],
+      desc: "你是「精致小公主」，小小一只却气场十足。你活泼、有点小傲娇，喜欢被当成主角。你讲究、爱美，也特别粘人，最受不了被冷落。",
+      quote: "小小只，也要活成自己的主角。",
+      fit: "被宠、被重视的关系", warn: "被忽略、被边缘化的处境", note: "" },
+  { id: "native", type: "D", name: "中华田园犬", alias: "土狗 / 大黄 · 最接地气的靠谱", kw: ["忠诚", "护家", "接地气", "聪明"],
+      desc: "你没有高贵血统，却最接地气、最懂人心。你聪明、护家、皮实耐造，对家人掏心掏肺。你的魅力不在「高级」，在「真实和靠谱」。",
+      quote: "不高贵，但最靠得住；不精致，但最重情。",
+      fit: "真实、有烟火气的生活", warn: "虚荣、攀比的环境", note: "" }
+];
+
+/* ===== 独立加权计分键 =====
+   每题选项对应一个倾向字母 A/B/C/D；
+   每个品种在其主倾向题上得高分，在反向倾向题上扣分，其余为中性。
+   KEYS[品种id] = 16 题各自的 [A,B,C,D] 分值数组。 */
+const OPTION_IDX = { A: 0, B: 1, C: 2, D: 3 };
+
+// 每品种在 16 题上的偏好选项：命中该题偏好 +3，未命中 0；按题独立分化
+const QPREF = {
+  // A 陪伴粘人型
+  ragdoll:    ["A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A"],
+  bluewhite:  ["A","C","B","A","A","C","A","C","A","C","C","A","A","A","A","A"],
+  siamese:    ["A","C","A","A","A","A","A","A","A","A","A","A","A","A","A","A"],
+  sphynx:     ["A","C","A","A","C","A","C","A","A","C","C","A","A","A","A","A"],
+  samoyed:    ["A","C","A","C","A","C","C","C","A","C","C","A","A","C","A","A"],
+  golden:     ["A","A","B","A","A","A","A","A","A","A","A","A","A","A","A","A"],
+  labrador:   ["A","C","A","A","C","A","C","A","A","C","C","A","A","C","A","A"],
+  bichon:     ["A","D","A","A","A","A","A","A","A","A","D","A","A","A","A","A"],
+  poodle:     ["A","C","A","A","A","A","C","C","A","C","C","A","A","C","A","A"],
+  // B 独立领地型
+  goldenshade:["D","B","B","B","B","B","B","D","B","B","B","B","B","B","D","B"],
+  silvershade:["B","B","D","B","B","B","B","B","B","B","B","B","B","B","B","B"],
+  lihua:      ["B","B","B","C","B","B","B","B","B","C","B","B","B","B","B","B"],
+  chinchilla: ["D","B","B","B","B","B","B","B","B","B","B","B","D","B","B","B"],
+  calico:     ["B","C","B","B","C","B","C","B","B","C","B","B","B","B","B","B"],
+  blackcat:   ["B","B","B","B","B","D","B","B","B","B","D","B","B","B","B","B"],
+  shiba:      ["B","B","B","B","B","B","B","D","B","B","B","B","B","B","B","D"],
+  akita:      ["B","D","B","B","B","B","B","B","B","B","B","B","D","B","B","B"],
+  schnauzer:  ["B","C","B","B","B","B","C","B","B","C","B","B","B","B","B","B"],
+  // C 高能探索型
+  americansh: ["D","B","B","D","D","D","B","D","D","B","D","D","D","B","D","D"],
+  maine:      ["A","C","B","C","C","A","C","A","A","C","C","C","A","C","A","C"],
+  cowcat:     ["C","C","C","C","C","D","C","C","C","C","C","C","C","C","C","C"],
+  bcollie:    ["C","C","B","C","C","C","C","C","C","C","B","C","C","C","C","C"],
+  husky:      ["C","C","C","D","C","C","C","C","C","D","C","C","C","D","C","C"],
+  corgi:      ["C","D","B","C","C","D","C","D","C","C","D","C","C","C","D","C"],
+  pom:        ["C","C","C","C","A","C","C","C","C","C","C","C","A","C","C","A"],
+  gshepherd:  ["B","C","B","B","B","C","C","B","B","C","B","B","B","B","C","B"],
+  malamute:   ["A","B","B","B","C","A","C","B","A","B","C","B","A","B","A","B"],
+  // D 佛系松弛型
+  blue:       ["D","D","D","D","D","D","D","D","D","D","D","D","D","D","D","D"],
+  fold:       ["A","D","D","A","D","A","D","D","A","D","D","D","A","D","A","D"],
+  exotic:     ["D","D","A","D","D","D","D","D","D","D","D","A","D","D","D","D"],
+  persian:    ["D","B","D","D","B","D","D","B","D","B","D","D","D","B","D","D"],
+  orange:     ["D","D","D","A","D","D","D","D","D","D","A","D","D","D","D","A"],
+  frenchie:   ["A","B","D","D","D","A","D","B","D","B","D","D","A","D","B","D"],
+  chow:       ["D","B","B","D","B","D","B","D","D","B","B","D","D","B","D","B"],
+  yorkie:     ["A","C","A","C","A","A","C","A","A","C","A","A","A","C","C","A"],
+  native:     ["A","D","B","B","B","A","B","B","A","B","D","B","A","B","A","B"]
+};
+
+// 主型在各题上的基线：主倾向 +2，次倾向 +1，其余 -1
+const BASE = {
+  A: [2, 2, 1, 1, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2],
+  B: [0, 2, 2, 2, 0, 0, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1],
+  C: [0, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1],
+  D: [2, 1, 0, 0, 0, 2, 0, 1, 2, 0, 0, 2, 1, 0, 2, 2]
+};
+
+const KEYS = {};
+RESULTS.forEach(r => {
+  const pref = QPREF[r.id] || [];
+  KEYS[r.id] = QUESTIONS.map((_, qi) => {
+    const main = r.type;
+    const baseRow = BASE[main];
+    const row = [0, 0, 0, 0];
+    ["A", "B", "C", "D"].forEach((letter, idx) => {
+      let score = baseRow[qi];
+      if (letter !== main) score = score > 0 ? 0 : -1;
+      // 品种个性化偏好：命中该题偏好额外 +3，未命中偏好的选项适度减分
+      if (pref[qi] === letter) score += 3;
+      else score -= 1;
+      row[idx] = score;
+    });
+    return row;
+  });
+});
+
+let answers = [];
+let current = 0;
+
+function show(viewId) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.getElementById(viewId).classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function startQuiz() {
+  answers = [];
+  current = 0;
+  show("view-quiz");
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = QUESTIONS[current];
+  const total = QUESTIONS.length;
+  document.getElementById("progressCount").textContent = "第 " + (current + 1) + " 题 / 共 " + total + " 题";
+  document.getElementById("progressFill").style.width = ((current) / total * 100) + "%";
+  document.getElementById("questionTitle").textContent = item.q;
+
+  const list = document.getElementById("optionList");
+  list.innerHTML = "";
+  item.options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "option";
+    if (answers[current] === opt.k) btn.classList.add("picked");
+    btn.innerHTML = '<span class="tag">' + opt.k + '</span><span class="text">' + opt.t + "</span>";
+    btn.onclick = () => pick(opt.k);
+    list.appendChild(btn);
+  });
+
+  document.getElementById("backBtn").disabled = (current === 0);
+}
+
+function pick(key) {
+  answers[current] = key;
+  const total = QUESTIONS.length;
+  if (current < total - 1) {
+    current++;
+    renderQuestion();
+  } else {
+    document.getElementById("progressFill").style.width = "100%";
+    setTimeout(showResult, 260);
+  }
+}
+
+function goBack() {
+  if (current > 0) {
+    current--;
+    renderQuestion();
+  }
+}
+
+function computeResult() {
+  let best = RESULTS[0];
+  let bestScore = -Infinity;
+  RESULTS.forEach(r => {
+    let score = 0;
+    KEYS[r.id].forEach((row, qi) => {
+      const ans = answers[qi];
+      if (ans !== undefined) score += row[OPTION_IDX[ans]];
+    });
+    if (score > bestScore) { bestScore = score; best = r; }
+  });
+  return { main: best.type, hit: best, score: bestScore };
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function highlight(desc, kw) {
+  let html = escapeHtml(desc);
+  kw.forEach(k => {
+    if (!k) return;
+    html = html.split(escapeHtml(k)).join('<span class="em">' + escapeHtml(k) + "</span>");
+  });
+  return html;
+}
+
+function showResult() {
+  const { main, hit: r } = computeResult();
+
+  const photo = document.getElementById("resultImg");
+  const imgSrc = IMG_MAP[r.id];
+  if (imgSrc) {
+    photo.src = imgSrc;
+    photo.alt = r.name;
+    photo.style.display = "block";
+    photo.onerror = () => { photo.style.display = "none"; };
+  } else {
+    photo.style.display = "none";
+  }
+
+  document.getElementById("resultType").textContent = TYPE_NAME[main];
+  document.getElementById("resultName").textContent = r.name;
+  document.getElementById("resultAlias").textContent = r.alias;
+  document.getElementById("resultDesc").innerHTML = highlight(r.desc, r.kw);
+  document.getElementById("resultQuote").textContent = r.quote;
+  document.getElementById("resultFit").textContent = r.fit;
+  document.getElementById("resultWarn").textContent = r.warn;
+  document.getElementById("resultNote").textContent = r.note;
+
+  const kwBox = document.getElementById("resultKw");
+  kwBox.innerHTML = "";
+  r.kw.forEach(k => {
+    const s = document.createElement("span");
+    s.textContent = k;
+    kwBox.appendChild(s);
+  });
+
+  show("view-result");
+}
+</script>
+</body>
+</html>
