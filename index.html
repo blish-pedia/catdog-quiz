@@ -62,13 +62,15 @@
   .back-btn:disabled{opacity:.35;cursor:not-allowed}
 
   /* 结果 */
-  .result-panel{background:var(--paper);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;margin:24px auto}
-  .result-cover{position:relative;padding:34px 26px 28px;background:linear-gradient(150deg,#3a2c1c 0%,#6b4a26 55%,#8a6230 100%);color:#fff;overflow:hidden}
-  .result-photo{position:absolute;top:0;right:0;height:100%;aspect-ratio:1/1;object-fit:contain}
-  .result-cover .cover-text{position:relative;padding-right:166px}
-  .result-cover::before{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
-  .result-cover::after{content:"";position:absolute;left:-30px;bottom:-50px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.06)}
-  .result-type{position:relative;display:inline-block;font-size:12px;letter-spacing:.16em;color:#fff;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 14px;margin-bottom:14px}
+  .result-panel{background:var(--paper);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;margin:24px auto;max-width:520px}
+  .result-cover{position:relative;padding:14px;background:transparent;color:#fff}
+  .result-photo{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;object-fit:cover;object-position:50% 50%;z-index:0}
+  .result-cover .cover-text{position:relative;z-index:2;aspect-ratio:15/8;min-height:150px;display:flex;flex-direction:column;justify-content:flex-end;border-radius:18px;overflow:hidden;padding:16px 18px;color:#fff;box-shadow:0 10px 28px rgba(0,0,0,.16)}
+  .result-cover .cover-text::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(20,14,9,0) 34%,rgba(20,14,9,.18) 62%,rgba(20,14,9,.60) 100%)}
+  .result-cover .result-type,.result-cover .result-name,.result-cover .result-alias{position:relative;z-index:2}
+  .result-cover::before{display:none}
+  .result-cover::after{display:none}
+  .result-type{position:relative;display:inline-block;align-self:flex-start;width:auto;max-width:100%;font-size:12px;letter-spacing:.16em;color:#fff;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 14px;margin-bottom:14px}
   .result-name{position:relative;font-size:29px;font-weight:800;letter-spacing:.03em;margin-bottom:4px}
   .result-alias{position:relative;font-size:13.5px;color:rgba(255,255,255,.88)}
   .result-body{padding:24px 26px 28px}
@@ -103,13 +105,19 @@
 
   @media (max-width:480px){
     .result-name{font-size:23px}
-    .result-cover{padding:28px 20px 24px}
-    .result-photo{height:100%;aspect-ratio:1/1;top:0;right:0;border-radius:0}
-    .result-cover .cover-text{padding-right:126px}
+    .result-cover{padding:10px}
+    .result-photo{height:100%;aspect-ratio:auto}
+    .result-cover .cover-text{aspect-ratio:15/8;min-height:140px;padding:12px 14px;border-radius:14px}
     .result-body{padding:20px 18px}
     .fit-box{grid-template-columns:1fr}
     .quote-text{font-size:16px}
   }
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.result-cover .cover-text{background:transparent}}
+/* 低透明度下的可读性补偿 */
+.result-cover .result-name{text-shadow:0 1px 16px rgba(0,0,0,.55),0 1px 2px rgba(0,0,0,.35)}
+.result-cover .result-alias{text-shadow:0 1px 12px rgba(0,0,0,.55),0 1px 2px rgba(0,0,0,.30)}
+.result-cover .result-type{align-self:flex-start;backdrop-filter:none;-webkit-backdrop-filter:none}
+@media (min-width:700px){.result-cover .cover-text{min-height:0}}
 </style>
 </head>
 <body>
@@ -154,8 +162,8 @@
   <div class="wrap">
     <div class="result-panel">
       <div class="result-cover">
-        <img class="result-photo" id="resultImg" alt="">
         <div class="cover-text">
+          <img class="result-photo" id="resultImg" alt="">
           <span class="result-type" id="resultType"></span>
           <h2 class="result-name" id="resultName"></h2>
           <p class="result-alias" id="resultAlias"></p>
@@ -194,42 +202,42 @@
 <script>
 /* ===== 品种图片映射（本地相对路径） ===== */
 const IMG_MAP = {
-  ragdoll: "assets/cat-ragdoll.webp",
-  bluewhite: "assets/cat-blue-white-bsh.webp",
-  siamese: "assets/cat-siamese.webp",
-  sphynx: "assets/cat-sphynx.webp",
-  samoyed: "assets/dog-samoyed.webp",
-  golden: "assets/dog-golden.webp",
-  labrador: "assets/dog-labrador.webp",
-  bichon: "assets/dog-bichon.webp",
-  poodle: "assets/dog-poodle.webp",
-  goldenshade: "assets/cat-golden-shaded.webp",
-  silvershade: "assets/cat-silver-shaded.webp",
-  lihua: "assets/cat-li-hua.webp",
-  chinchilla: "assets/cat-chinchilla.webp",
-  calico: "assets/cat-calico.webp",
-  blackcat: "assets/cat-black.webp",
-  shiba: "assets/dog-shiba.webp",
-  akita: "assets/dog-akita.webp",
-  schnauzer: "assets/dog-schnauzer.webp",
-  americansh: "assets/cat-american-sh.webp",
-  maine: "assets/cat-maine-coon.webp",
-  cowcat: "assets/cat-cow.webp",
-  bcollie: "assets/dog-border-collie.webp",
-  husky: "assets/dog-husky.webp",
-  corgi: "assets/dog-corgi.webp",
-  pom: "assets/dog-pomeranian.webp",
-  gshepherd: "assets/dog-german-shepherd.webp",
-  malamute: "assets/dog-malamute.webp",
-  blue: "assets/cat-blue-bsh.webp",
-  fold: "assets/cat-scottish-fold.webp",
-  exotic: "assets/cat-exotic-sh.webp",
-  persian: "assets/cat-persian.webp",
-  orange: "assets/cat-orange.webp",
-  frenchie: "assets/dog-french-bulldog.webp",
-  chow: "assets/dog-chow-chow.webp",
-  yorkie: "assets/dog-yorkie.webp",
-  native: "assets/dog-native.webp"
+  ragdoll: {s:"assets/cat-ragdoll.webp", x:50, y:34},
+  bluewhite: {s:"assets/cat-blue-white-bsh.webp", x:50, y:6},
+  siamese: {s:"assets/cat-siamese.webp", x:50, y:26},
+  sphynx: {s:"assets/cat-sphynx.webp", x:50, y:34},
+  samoyed: {s:"assets/dog-samoyed.webp", x:50, y:3},
+  golden: {s:"assets/dog-golden.webp", x:50, y:12},
+  labrador: {s:"assets/dog-labrador.webp", x:50, y:14},
+  bichon: {s:"assets/dog-bichon.webp", x:50, y:12},
+  poodle: {s:"assets/dog-poodle.webp", x:50, y:6},
+  goldenshade: {s:"assets/cat-golden-shaded.webp", x:50, y:39},
+  silvershade: {s:"assets/cat-silver-shaded.webp", x:50, y:31},
+  lihua: {s:"assets/cat-li-hua.webp", x:50, y:46},
+  chinchilla: {s:"assets/cat-chinchilla.webp", x:50, y:32},
+  calico: {s:"assets/cat-calico.webp", x:50, y:12},
+  blackcat: {s:"assets/cat-black.webp", x:50, y:26},
+  shiba: {s:"assets/dog-shiba.webp", x:50, y:41},
+  akita: {s:"assets/dog-akita.webp", x:50, y:47},
+  schnauzer: {s:"assets/dog-schnauzer.webp", x:50, y:10},
+  americansh: {s:"assets/cat-american-sh.webp", x:50, y:46},
+  maine: {s:"assets/cat-maine-coon.webp", x:50, y:18},
+  cowcat: {s:"assets/cat-cow.webp", x:50, y:60},
+  bcollie: {s:"assets/dog-border-collie.webp", x:50, y:45},
+  husky: {s:"assets/dog-husky.webp", x:50, y:93},
+  corgi: {s:"assets/dog-corgi.webp", x:50, y:42},
+  pom: {s:"assets/dog-pomeranian.webp", x:50, y:78},
+  gshepherd: {s:"assets/dog-german-shepherd.webp", x:50, y:53},
+  malamute: {s:"assets/dog-malamute.webp", x:50, y:12},
+  blue: {s:"assets/cat-blue-bsh.webp", x:50, y:51},
+  fold: {s:"assets/cat-scottish-fold.webp", x:50, y:47},
+  exotic: {s:"assets/cat-exotic-sh.webp", x:50, y:36},
+  persian: {s:"assets/cat-persian.webp", x:50, y:15},
+  orange: {s:"assets/cat-orange.webp", x:50, y:43},
+  frenchie: {s:"assets/dog-french-bulldog.webp", x:47, y:35},
+  chow: {s:"assets/dog-chow-chow.webp", x:50, y:14},
+  yorkie: {s:"assets/dog-yorkie.webp", x:50, y:52},
+  native: {s:"assets/dog-native.webp", x:50, y:35}
 };
 
 /* ===== 16 道题：每题四个选项对应 A / B / C / D ===== */
@@ -479,13 +487,13 @@ const RESULTS = [
       desc: "你是人群里的「段子手」，爱闹爱嚎、表情夸张、对谁都自来熟。精力旺盛到离谱，无聊的时候就会「拆家」——给自己搞点幺蛾子。你不是坏，只是天生不羁爱自由。",
       quote: "人生苦短，先拆为敬。",
       fit: "自由奔放、不被拘束的生活", warn: "被管太死、按部就班的环境", note: "" },
-  { id: "corgi", type: "C", name: "柯基", alias: "Corgi · 小短腿里的大心脏", kw: ["聪明", "倔强", "精力旺", "可爱"],
-      desc: "小短腿里装着一颗大心脏。你聪明又爱表现，看着软萌其实特别倔，认定的事九头牛拉不回。精力旺盛、闲不住，最受不了被人小瞧。",
-      quote: "腿短，但倔。别人笑你可爱，其实你比谁都扛得住事。",
+  { id: "corgi", type: "C", name: "柯基", alias: "Corgi · 软萌外表，倔强心脏", kw: ["聪明", "倔强", "精力旺", "可爱"],
+      desc: "软萌的外表里，装着一颗大心脏。你聪明又爱表现，看着软萌其实特别倔，认定的事九头牛拉不回。精力旺盛、闲不住，最受不了被人小瞧。",
+      quote: "看着可爱，其实你比谁都扛得住事。",
       fit: "被看见、能施展的舞台", warn: "被低估、被当成摆设的处境", note: "" },
-  { id: "pom", type: "C", name: "博美", alias: "Pomeranian · 个子小存在感不小", kw: ["活泼", "爱叫", "小傲娇", "机警"],
-      desc: "你小小一只，嗓门和自信却都不小。你机警、活泼、有点小傲娇，喜欢成为人群焦点。你看着软萌，其实有自己的小脾气，最讨厌被忽视。",
-      quote: "个子小，不代表存在感小。",
+  { id: "pom", type: "C", name: "博美", alias: "Pomeranian · 嗓门亮，气场足", kw: ["活泼", "爱叫", "小傲娇", "机警"],
+      desc: "你看上去软萌，嗓门和自信却都不小。你机警、活泼、有点小傲娇，喜欢成为人群焦点。你看着软萌，其实有自己的小脾气，最讨厌被忽视。",
+      quote: "被看见，从来不是靠音量。",
       fit: "被关注、能表现的环境", warn: "被无视、被冷落的处境", note: "" },
   { id: "gshepherd", type: "C", name: "德牧", alias: "德国牧羊犬 · 工作犬之王", kw: ["忠诚", "可靠", "严肃", "有原则"],
       desc: "你是「工作犬之王」，忠诚、可靠、极有原则。你做事认真、值得托付，是那种「把后背交给你最放心」的人。缺点是太严肃，偶尔需要学会放松。",
@@ -497,15 +505,15 @@ const RESULTS = [
       fit: "需要担当和力量的场合", warn: "被当成没主见的「老实人」", note: "" },
   /* ===== D 佛系松弛型（9 个） ===== */
   { id: "blue", type: "D", name: "英短蓝猫", alias: "英国短毛猫 · 纯蓝色（色型）", kw: ["稳重", "憨厚", "佛系", "情绪稳定"],
-      desc: "你是经典「大脸猫」，圆滚滚、慢吞吞，脾气好到让人心疼。你不争不抢、随遇而安，是朋友里最让人安心的存在。缺点是太随和，容易被忽略自己的需求。",
+      desc: "你是经典「佛系猫」，慢吞吞、脾气好到让人心疼。你不争不抢、随遇而安，是朋友里最让人安心的存在。缺点是太随和，容易被忽略自己的需求。",
       quote: "不吵不闹，稳稳地陪着你就好。",
       fit: "安稳、低压的生活", warn: "鸡飞狗跳、高压竞争的环境", note: "蓝猫是英国短毛猫的毛色 / 色型，并非独立品种。" },
   { id: "fold", type: "D", name: "苏格兰折耳猫", alias: "Scottish Fold · 居家小甜心", kw: ["温柔", "安静", "宅家", "小甜心"],
       desc: "你性格安静又粘人，是标准的「居家小甜心」。你不爱折腾、喜欢宅着，对亲近的人特别温柔，只是一个人待太久会没安全感。",
       quote: "世界很大，但你只想窝在喜欢的人身边。",
       fit: "温馨稳定的家庭", warn: "漂泊不定、频繁分离的生活", note: "折耳猫有遗传软骨病风险，领养 / 选购请关注健康。" },
-  { id: "exotic", type: "D", name: "加菲猫（异国短毛猫）", alias: "Exotic Shorthair · 扁脸大眼的懒鬼", kw: ["呆萌", "懒散", "憨厚", "佛系"],
-      desc: "你是「加菲猫」本猫——扁脸大眼、懒懒散散、与世无争。你不爱动、爱吃爱睡，对什么都看得开。别人觉得你懒得可爱，其实你只是懂得享受当下。",
+  { id: "exotic", type: "D", name: "加菲猫（异国短毛猫）", alias: "Exotic Shorthair · 懒洋洋的享乐派", kw: ["呆萌", "懒散", "憨厚", "佛系"],
+      desc: "你是「加菲猫」本猫——懒懒散散、与世无争。你不爱动、爱吃爱睡，对什么都看得开。别人觉得你懒得可爱，其实你只是懂得享受当下。",
       quote: "能躺着就不坐着，是你的人生智慧。",
       fit: "慢节奏、松弛的生活", warn: "被逼着卷的环境", note: "" },
   { id: "persian", type: "D", name: "波斯猫", alias: "Persian · 猫界贵族", kw: ["优雅", "慵懒", "高贵", "情绪稳定"],
@@ -513,20 +521,20 @@ const RESULTS = [
       quote: "优雅不是装出来的，是刻在骨子里的。",
       fit: "精致、安逸的生活", warn: "奔波劳碌、鸡飞狗跳的处境", note: "" },
   { id: "orange", type: "D", name: "橘猫", alias: "中华田园猫 · 橘色虎斑（毛色，非品种）", kw: ["佛系", "乐天", "亲人", "知足"],
-      desc: "你把「今天过得舒服」当成头等大事，不争不抢、情绪稳定，是天生的乐天派。你未必最耀眼，但总能把日子过成别人羡慕的样子——「十橘九胖，大橘为重」说的就是你这种知足的气场。",
+      desc: "你把「今天过得舒服」当成头等大事，不争不抢、情绪稳定，是天生的乐天派。你未必最耀眼，但总能把日子过成别人羡慕的样子——「大橘为重」说的就是你这种知足的气场。",
       quote: "不争，是你的底气；吃好睡好，是你的人生哲学。",
       fit: "松弛、低压的生活节奏", warn: "内卷激烈、节奏紧绷的竞技场", note: "橘猫是毛色 / 花纹分类，通常属于中华田园猫，并非独立品种。" },
   { id: "frenchie", type: "D", name: "法斗", alias: "French Bulldog · 呆萌固执的法斗", kw: ["呆萌", "固执", "佛系", "亲人"],
-      desc: "你是「法斗」本斗——大耳朵、呆萌脸、走路自带喜感。你懒懒的、不爱叫也不爱闹，但对主人特别亲。你有点固执，认准的事别人劝不动。",
+      desc: "你是「法斗」本斗——呆萌、慢半拍，自带喜感。你懒懒的、不爱叫也不爱闹，但对主人特别亲。你有点固执，认准的事别人劝不动。",
       quote: "呆萌是表象，固执是内核，佛系是日常。",
       fit: "轻松、不折腾的生活", warn: "高强度运动 / 激烈竞争的环境", note: "" },
   { id: "chow", type: "D", name: "松狮", alias: "Chow Chow · 毛茸茸的小狮子", kw: ["呆萌", "高冷", "独立", "有脾气"],
       desc: "你像只毛茸茸的「小狮子」，长得呆萌，性格却高冷独立。你不爱讨好、有自己的脾气，对陌生人保持距离，对主人却忠诚。你的「高冷」是保护色。",
       quote: "看着萌，其实有脾气；看着冷，其实很专一。",
       fit: "有边界、被尊重的关系", warn: "过度热情的社交", note: "" },
-  { id: "yorkie", type: "A", name: "约克夏", alias: "Yorkshire Terrier · 小小只的主角", kw: ["精致", "傲娇", "活泼", "小公主"],
-      desc: "你是「精致小公主」，小小一只却气场十足。你活泼、有点小傲娇，喜欢被当成主角。你讲究、爱美，也特别粘人，最受不了被冷落。",
-      quote: "小小只，也要活成自己的主角。",
+  { id: "yorkie", type: "A", name: "约克夏", alias: "Yorkshire Terrier · 精致的小主角", kw: ["精致", "傲娇", "活泼", "小公主"],
+      desc: "你是「精致小公主」，外表柔美却气场十足。你活泼、有点小傲娇，喜欢被当成主角。你讲究、爱美，也特别粘人，最受不了被冷落。",
+      quote: "精致，也能活成自己的主角。",
       fit: "被宠、被重视的关系", warn: "被忽略、被边缘化的处境", note: "" },
   { id: "native", type: "D", name: "中华田园犬", alias: "土狗 / 大黄 · 最接地气的靠谱", kw: ["忠诚", "护家", "接地气", "聪明"],
       desc: "你没有高贵血统，却最接地气、最懂人心。你聪明、护家、皮实耐造，对家人掏心掏肺。你的魅力不在「高级」，在「真实和靠谱」。",
@@ -698,9 +706,10 @@ function showResult() {
   const { main, hit: r } = computeResult();
 
   const photo = document.getElementById("resultImg");
-  const imgSrc = IMG_MAP[r.id];
-  if (imgSrc) {
-    photo.src = imgSrc;
+  const pose = IMG_MAP[r.id];
+  if (pose) {
+    photo.src = pose.s;
+    photo.style.objectPosition = pose.x + "% " + pose.y + "%";
     photo.alt = r.name;
     photo.style.display = "block";
     photo.onerror = () => { photo.style.display = "none"; };
@@ -727,6 +736,18 @@ function showResult() {
 
   show("view-result");
 }
+
+/* 预览用：?r=<id> 直接展示指定结果，方便对比图片比例 */
+(function(){
+  try{
+    var id = new URLSearchParams(location.search).get("r");
+    if(!id) return;
+    var t = RESULTS.find(function(x){ return x.id === id; });
+    if(!t) return;
+    computeResult = function(){ return { main: t.type, hit: t, score: 0 }; };
+    setTimeout(showResult, 60);
+  }catch(e){}
+})();
 </script>
 </body>
 </html>
