@@ -64,7 +64,7 @@
   /* 结果 */
   .result-panel{background:var(--paper);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;margin:24px auto;max-width:520px}
   .result-cover{position:relative;padding:14px;background:transparent;color:#fff}
-  .result-photo{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;object-fit:cover;object-position:50% 50%;z-index:0}
+  .result-photo{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;object-fit:cover;object-position:50% 50%;z-index:0;opacity:0;transition:opacity .3s ease;background:linear-gradient(110deg,#efe3d8 8%,#f7efe7 18%,#efe3d8 33%)}
   .result-cover .cover-text{position:relative;z-index:2;aspect-ratio:15/8;min-height:150px;display:flex;flex-direction:column;justify-content:flex-end;border-radius:18px;overflow:hidden;padding:16px 18px;color:#fff;box-shadow:0 10px 28px rgba(0,0,0,.16)}
   .result-cover .cover-text::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(20,14,9,0) 34%,rgba(20,14,9,.18) 62%,rgba(20,14,9,.60) 100%)}
   .result-cover .result-type,.result-cover .result-name,.result-cover .result-alias{position:relative;z-index:2}
@@ -633,6 +633,24 @@ function startQuiz() {
   current = 0;
   show("view-quiz");
   renderQuestion();
+  startPreload();
+}
+
+/* ===== 结果图预加载：答题过程中逐张缓存，出结果时秒开 ===== */
+var __preloadStarted = false;
+function startPreload() {
+  if (__preloadStarted) return;
+  __preloadStarted = true;
+  var queue = [];
+  for (var k in IMG_MAP) { if (IMG_MAP[k] && IMG_MAP[k].s) queue.push(IMG_MAP[k].s); }
+  var i = 0;
+  function next() {
+    if (i >= queue.length) return;
+    var im = new Image();
+    im.onload = im.onerror = function () { i++; setTimeout(next, 80); };
+    im.src = queue[i];
+  }
+  setTimeout(next, 600);
 }
 
 function renderQuestion() {
@@ -708,11 +726,14 @@ function showResult() {
   const photo = document.getElementById("resultImg");
   const pose = IMG_MAP[r.id];
   if (pose) {
-    photo.src = pose.s;
+    photo.style.opacity = "0";
     photo.style.objectPosition = pose.x + "% " + pose.y + "%";
     photo.alt = r.name;
     photo.style.display = "block";
+    photo.onload = () => { photo.style.opacity = "1"; };
     photo.onerror = () => { photo.style.display = "none"; };
+    if (photo.complete && photo.naturalWidth > 0) { photo.style.opacity = "1"; }
+    photo.src = pose.s;
   } else {
     photo.style.display = "none";
   }
